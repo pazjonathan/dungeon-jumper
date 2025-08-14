@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dungeon Jumper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="levelEditorControls" style="display: none;">
+        <div id="editorModeButtons">
+            <button id="placeMode">Place</button>
+            <button id="removeMode">Remove</button>
+            <button id="moveMode">Move</button>
+            <button id="resizeMode">Resize</button>
+            <button id="rotateMode">Rotate</button>
+        </div>
+        <div id="platformButtons">
+            <button id="standardPlatform">Standard</button>
+            <button id="movingPlatform">Moving</button>
+            <button id="breakablePlatform">Breakable</button>
+            <button id="winPlatform">Win</button>
+            <button id="wallPlatform">Wall</button>
+        </div>
+        <div id="enemyButtons">
+            <button id="standardEnemy">Standard Enemy</button>
+            <button id="patrollingEnemy">Patrolling Enemy</button>
+            <button id="jumpingEnemy">Jumping Enemy</button>
+            <button id="turret">Turret</button>
+        </div>
+        <div id="levelManagement">
+            <button id="saveLevel">Save Level</button>
+            <button id="loadFromStringBtn">Load from String</button>
+            <button id="loadExistingLevelBtn">Load Existing Level</button>
+            <div id="existingLevelChoices" style="display: none;">
+                <!-- Buttons will be styled to be inline -->
+            </div>
+            <button id="playLevel">Play Level</button>
+            <textarea id="levelString" placeholder="Paste level string here..."></textarea>
+            <button id="backToMenuFromEditor">Back to Menu</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

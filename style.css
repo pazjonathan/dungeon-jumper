@@ -1,0 +1,111 @@
+body {
+    margin-top: -25px; /* Adjusted to move canvas a little lower */
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #000;
+    overflow: hidden;
+}
+
+canvas {
+    border: 1px solid #fff;
+    background-color: #333;
+}
+
+
+#levelEditorControls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+    font-family: sans-serif;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#levelEditorControls button {
+    display: block;
+    margin-bottom: 5px;
+    padding: 8px 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+#levelEditorControls button:hover {
+    background-color: #45a049;
+}
+
+#levelEditorControls textarea {
+    width: 200px;
+    height: 100px;
+    margin-top: 10px;
+    background-color: #222;
+    color: white;
+    border: 1px solid #555;
+    padding: 5px;
+    resize: vertical;
+}
+
+#platformButtons button {
+    background-color: #008CBA;
+}
+
+#platformButtons button:hover {
+    background-color: #007B9E;
+}
+
+#enemyButtons button {
+    background-color: #E5A00D;
+}
+
+#enemyButtons button:hover {
+    background-color: #C78C0A;
+}
+
+#levelManagement button {
+    background-color: #f44336;
+}
+
+#levelManagement button:hover {
+    background-color: #da190b;
+}
+
+#existingLevelChoices button {
+    display: inline-block;
+    width: 40px;
+    margin-right: 5px;
+    background-color: #17a2b8;
+}
+
+#existingLevelChoices button:hover {
+    background-color: #138496;
+}
+
+#backToMenuFromEditor {
+    background-color: #6c757d !important;
+}
+
+#backToMenuFromEditor:hover {
+    background-color: #5a6268 !important;
+}
+
+#playLevel {
+    background-color: #5cb85c;
+}
+
+#playLevel:hover {
+    background-color: #4cae4c;
+}
+
+.selected {
+    border: 2px solid yellow !important;
+    box-shadow: 0 0 8px yellow !important;
+}
