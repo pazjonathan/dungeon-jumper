@@ -69,7 +69,7 @@ let moveOffsetY;
 // Player properties
 const playerWidth = 40;
 const playerHeight = 40;
-let playerSpeed = 6;
+let playerSpeed = 5;
 let jumpHeight = 12;
 let enemyJumpHeight = 8;
 let velocityY = 0;
