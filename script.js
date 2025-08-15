@@ -1949,10 +1949,10 @@ function resetLevelForEditorPlaytest() {
         }
         let enemyPlatform = null;
         // If it's a patrolling enemy, find its associated platform in the *newly created* platforms array
-        if (eData.type === 'patrolling' && eData.platformX !== undefined && e.platformY !== undefined) {
-            enemyPlatform = platforms.find(p => p.x === e.platformX && p.y === (groundPlatformY - e.platformY));
+        if (eData.type === 'patrolling' && eData.platformX !== undefined && eData.platformY !== undefined) {
+            enemyPlatform = platforms.find(p => p.x === eData.platformX && p.y === (groundPlatformY - eData.platformY));
         }
-        enemies.push(new Enemy(e.x, groundPlatformY - e.y, enemyWidth, enemyHeight, color, e.type, enemyPlatform));
+        enemies.push(new Enemy(eData.x, groundPlatformY - eData.y, enemyWidth, enemyHeight, color, eData.type, enemyPlatform));
     });
 
     // Reconstruct turrets from the pristine backup data
