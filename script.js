@@ -1644,7 +1644,7 @@ function update() {
     if (player.y < cameraY + canvas.height / 2.5) {
         cameraY = player.y - canvas.height / 2.5;
     }
-    score = Math.max(0, Math.floor(-(cameraY) / 10));
+    // score = Math.max(0, Math.floor(-(cameraY) / 10));
     if (player.y > cameraY + canvas.height + 50) {
         gameover = true;
     }
