@@ -64,6 +64,7 @@ let isResizing = false;
 let resizeHandle = null;
 let initialMouseX, initialMouseY, initialPlatformWidth, initialPlatformHeight, initialPlatformX, initialPlatformY;
 let isMoving = false;
+let moveOffsetX;
 let moveOffsetY;
 
 // Player properties
@@ -587,7 +588,7 @@ class Boss2 extends Boss {
                         this.direction = -1;
                         this.x = canvas.width - this.width;
                         wallHit = true;
-                    } else if (this.x <= 0) {
+                    } else if (this.x < 0) {
                         this.direction = 1;
                         this.x = 0;
                         wallHit = true;
@@ -1278,21 +1279,10 @@ function clickHandler(e) {
                 if (!removedSomething) {
                     for (let i = platforms.length - 1; i >= 0; i--) {
                         const p = platforms[i];
-                        if (editorMouseX >= p.x && editorMouseX <= p.x + p.width && editorMouseY >= p.y && editorMouseY <= p.y + p.height) {
+                        if (editorMouseX >= p.x && mouseX <= p.x + p.width && mouseY >= p.y && mouseY <= p.y + p.height) {
                             platforms.splice(i, 1);
                             break; // Exit after removing one platform
                         }
-                    }
-                }
-            }
-        } else if (editorMode === 'resize') {
-            if (e.type === 'click') {
-                selectedPlatform = null; // Deselect any previously selected platform
-                for (let i = platforms.length - 1; i >= 0; i--) {
-                    const p = platforms[i];
-                    if (editorMouseX >= p.x && editorMouseX <= p.x + p.width && editorMouseY >= p.y && editorMouseY <= p.y + p.height) {
-                        selectedPlatform = p;
-                        break;
                     }
                 }
             }
@@ -1307,17 +1297,6 @@ function clickHandler(e) {
                             case 'right': t.shootDirection = 'down'; break;
                             case 'down': t.shootDirection = 'left'; break;
                         }
-                        break;
-                    }
-                }
-            }
-        } else if (editorMode === 'move') {
-            if (e.type === 'click') {
-                selectedPlatform = null; // Deselect any previously selected platform
-                for (let i = platforms.length - 1; i >= 0; i--) {
-                    const p = platforms[i];
-                    if (editorMouseX >= p.x && editorMouseX <= p.x + p.width && editorMouseY >= p.y && editorMouseY <= p.y + p.height) {
-                        selectedPlatform = p;
                         break;
                     }
                 }
@@ -2027,99 +2006,181 @@ function handleMouseDown(e) {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top + editorCameraY;
 
-    if (gameState === 'levelEditor' && editorMode === 'resize' && selectedPlatform) {
-        const handleSize = 8;
-        const handles = [
-            { x: selectedPlatform.x - handleSize / 2, y: selectedPlatform.y - handleSize / 2, name: 'top-left' },
-            { x: selectedPlatform.x + selectedPlatform.width / 2 - handleSize / 2, y: selectedPlatform.y - handleSize / 2, name: 'top' },
-            { x: selectedPlatform.x + selectedPlatform.width - handleSize / 2, y: selectedPlatform.y - handleSize / 2, name: 'top-right' },
-            { x: selectedPlatform.x - handleSize / 2, y: selectedPlatform.y + selectedPlatform.height / 2 - handleSize / 2, name: 'left' },
-            { x: selectedPlatform.x + selectedPlatform.width - handleSize / 2, y: selectedPlatform.y + selectedPlatform.height / 2 - handleSize / 2, name: 'right' },
-            { x: selectedPlatform.x - handleSize / 2, y: selectedPlatform.y + selectedPlatform.height - handleSize / 2, name: 'bottom-left' },
-            { x: selectedPlatform.x + selectedPlatform.width / 2 - handleSize / 2, y: selectedPlatform.y + selectedPlatform.height - handleSize / 2, name: 'bottom' },
-            { x: selectedPlatform.x + selectedPlatform.width - handleSize / 2, y: selectedPlatform.y + selectedPlatform.height - handleSize / 2, name: 'bottom-right' }
-        ];
+    if (gameState !== 'levelEditor') return;
 
-        for (const handle of handles) {
-            if (mouseX >= handle.x && mouseX <= handle.x + handleSize && mouseY >= handle.y && mouseY <= handle.y + handleSize) {
-                isResizing = true;
-                resizeHandle = handle.name;
-                initialMouseX = mouseX;
-                initialMouseY = mouseY;
-                initialPlatformX = selectedPlatform.x;
-                initialPlatformY = selectedPlatform.y;
-                initialPlatformWidth = selectedPlatform.width;
-                initialPlatformHeight = selectedPlatform.height;
-                return;
+    if (editorMode === 'resize') {
+        let clickedOnHandle = false;
+        if (selectedPlatform) {
+            const handleSize = 8;
+            const handles = [
+                { x: selectedPlatform.x - handleSize / 2, y: selectedPlatform.y - handleSize / 2, name: 'top-left' },
+                { x: selectedPlatform.x + selectedPlatform.width / 2 - handleSize / 2, y: selectedPlatform.y - handleSize / 2, name: 'top' },
+                { x: selectedPlatform.x + selectedPlatform.width - handleSize / 2, y: selectedPlatform.y - handleSize / 2, name: 'top-right' },
+                { x: selectedPlatform.x - handleSize / 2, y: selectedPlatform.y + selectedPlatform.height / 2 - handleSize / 2, name: 'left' },
+                { x: selectedPlatform.x + selectedPlatform.width - handleSize / 2, y: selectedPlatform.y + selectedPlatform.height / 2 - handleSize / 2, name: 'right' },
+                { x: selectedPlatform.x - handleSize / 2, y: selectedPlatform.y + selectedPlatform.height - handleSize / 2, name: 'bottom-left' },
+                { x: selectedPlatform.x + selectedPlatform.width / 2 - handleSize / 2, y: selectedPlatform.y + selectedPlatform.height - handleSize / 2, name: 'bottom' },
+                { x: selectedPlatform.x + selectedPlatform.width - handleSize / 2, y: selectedPlatform.y + selectedPlatform.height - handleSize / 2, name: 'bottom-right' }
+            ];
+
+            for (const handle of handles) {
+                if (mouseX >= handle.x && mouseX <= handle.x + handleSize && mouseY >= handle.y && mouseY <= handle.y + handleSize) {
+                    isResizing = true;
+                    resizeHandle = handle.name;
+                    initialMouseX = mouseX;
+                    initialMouseY = mouseY;
+                    initialPlatformX = selectedPlatform.x;
+                    initialPlatformY = selectedPlatform.y;
+                    initialPlatformWidth = selectedPlatform.width;
+                    initialPlatformHeight = selectedPlatform.height;
+                    clickedOnHandle = true;
+                    return;
+                }
+            }
+        }
+
+        if (!clickedOnHandle) {
+            selectedPlatform = null;
+            for (let i = platforms.length - 1; i >= 0; i--) {
+                const p = platforms[i];
+                if (mouseX >= p.x && mouseX <= p.x + p.width && mouseY >= p.y && mouseY <= p.y + p.height) {
+                    selectedPlatform = p;
+                    break;
+                }
+            }
+        }
+    } else if (editorMode === 'move') {
+        let foundSomething = false;
+        // Priority: Turret > Enemy > Platform
+        for (let i = turrets.length - 1; i >= 0; i--) {
+            const t = turrets[i];
+            if (mouseX >= t.x && mouseX <= t.x + t.width && mouseY >= t.y && mouseY <= t.y + t.height) {
+                selectedTurret = t;
+                selectedPlatform = null;
+                selectedEnemy = null;
+                isMoving = true;
+                moveOffsetX = mouseX - t.x;
+                moveOffsetY = mouseY - t.y;
+                foundSomething = true;
+                break;
+            }
+        }
+        if (!foundSomething) {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const e = enemies[i];
+                if (mouseX >= e.x && mouseX <= e.x + e.width && mouseY >= e.y && mouseY <= e.y + e.height) {
+                    selectedEnemy = e;
+                    selectedPlatform = null;
+                    selectedTurret = null;
+                    isMoving = true;
+                    moveOffsetX = mouseX - e.x;
+                    moveOffsetY = mouseY - e.y;
+                    foundSomething = true;
+                    break;
+                }
+            }
+        }
+        if (!foundSomething) {
+            for (let i = platforms.length - 1; i >= 0; i--) {
+                const p = platforms[i];
+                if (mouseX >= p.x && mouseX <= p.x + p.width && mouseY >= p.y && mouseY <= p.y + p.height) {
+                    selectedPlatform = p;
+                    selectedEnemy = null;
+                    selectedTurret = null;
+                    isMoving = true;
+                    moveOffsetX = mouseX - p.x;
+                    moveOffsetY = mouseY - p.y;
+                    break;
+                }
             }
         }
     }
 }
 
 function handleMouseMove(e) {
-    if (gameState !== 'levelEditor' || !isResizing) return;
+    if (gameState !== 'levelEditor') return;
 
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top + editorCameraY;
-    const deltaX = mouseX - initialMouseX;
-    const deltaY = mouseY - initialMouseY;
 
-    let newX = initialPlatformX;
-    let newY = initialPlatformY;
-    let newWidth = initialPlatformWidth;
-    let newHeight = initialPlatformHeight;
+    if (isResizing && selectedPlatform) {
+        const deltaX = mouseX - initialMouseX;
+        const deltaY = mouseY - initialMouseY;
 
-    switch (resizeHandle) {
-        case 'top-left':
-            newX = initialPlatformX + deltaX;
-            newY = initialPlatformY + deltaY;
-            newWidth = initialPlatformWidth - deltaX;
-            newHeight = initialPlatformHeight - deltaY;
-            break;
-        case 'top':
-            newY = initialPlatformY + deltaY;
-            newHeight = initialPlatformHeight - deltaY;
-            break;
-        case 'top-right':
-            newY = initialPlatformY + deltaY;
-            newWidth = initialPlatformWidth + deltaX;
-            newHeight = initialPlatformHeight - deltaY;
-            break;
-        case 'left':
-            newX = initialPlatformX + deltaX;
-            newWidth = initialPlatformWidth - deltaX;
-            break;
-        case 'right':
-            newWidth = initialPlatformWidth + deltaX;
-            break;
-        case 'bottom-left':
-            newX = initialPlatformX + deltaX;
-            newWidth = initialPlatformWidth - deltaX;
-            newHeight = initialPlatformHeight + deltaY;
-            break;
-        case 'bottom':
-            newHeight = initialPlatformHeight + deltaY;
-            break;
-        case 'bottom-right':
-            newWidth = initialPlatformWidth + deltaX;
-            newHeight = initialPlatformHeight + deltaY;
-            break;
+        let newX = initialPlatformX;
+        let newY = initialPlatformY;
+        let newWidth = initialPlatformWidth;
+        let newHeight = initialPlatformHeight;
+
+        switch (resizeHandle) {
+            case 'top-left':
+                newX = initialPlatformX + deltaX;
+                newY = initialPlatformY + deltaY;
+                newWidth = initialPlatformWidth - deltaX;
+                newHeight = initialPlatformHeight - deltaY;
+                break;
+            case 'top':
+                newY = initialPlatformY + deltaY;
+                newHeight = initialPlatformHeight - deltaY;
+                break;
+            case 'top-right':
+                newY = initialPlatformY + deltaY;
+                newWidth = initialPlatformWidth + deltaX;
+                newHeight = initialPlatformHeight - deltaY;
+                break;
+            case 'left':
+                newX = initialPlatformX + deltaX;
+                newWidth = initialPlatformWidth - deltaX;
+                break;
+            case 'right':
+                newWidth = initialPlatformWidth + deltaX;
+                break;
+            case 'bottom-left':
+                newX = initialPlatformX + deltaX;
+                newWidth = initialPlatformWidth - deltaX;
+                newHeight = initialPlatformHeight + deltaY;
+                break;
+            case 'bottom':
+                newHeight = initialPlatformHeight + deltaY;
+                break;
+            case 'bottom-right':
+                newWidth = initialPlatformWidth + deltaX;
+                newHeight = initialPlatformHeight + deltaY;
+                break;
+        }
+
+        // Snap to grid
+        selectedPlatform.x = Math.round(newX / editorGridSize) * editorGridSize;
+        selectedPlatform.y = Math.round(newY / editorGridSize) * editorGridSize;
+        selectedPlatform.width = Math.round(newWidth / editorGridSize) * editorGridSize;
+        selectedPlatform.height = Math.round(newHeight / editorGridSize) * editorGridSize;
+
+        // Prevent negative width/height
+        if (selectedPlatform.width < editorGridSize) selectedPlatform.width = editorGridSize;
+        if (selectedPlatform.height < editorGridSize) selectedPlatform.height = editorGridSize;
+    } else if (isMoving) {
+        const newX = mouseX - moveOffsetX;
+        const newY = mouseY - moveOffsetY;
+        const snappedX = Math.round(newX / editorGridSize) * editorGridSize;
+        const snappedY = Math.round(newY / editorGridSize) * editorGridSize;
+
+        if (selectedPlatform) {
+            selectedPlatform.x = snappedX;
+            selectedPlatform.y = snappedY;
+        } else if (selectedEnemy) {
+            selectedEnemy.x = snappedX;
+            selectedEnemy.y = snappedY;
+        } else if (selectedTurret) {
+            selectedTurret.x = snappedX;
+            selectedTurret.y = snappedY;
+        }
     }
-
-    // Snap to grid
-    selectedPlatform.x = Math.round(newX / editorGridSize) * editorGridSize;
-    selectedPlatform.y = Math.round(newY / editorGridSize) * editorGridSize;
-    selectedPlatform.width = Math.round(newWidth / editorGridSize) * editorGridSize;
-    selectedPlatform.height = Math.round(newHeight / editorGridSize) * editorGridSize;
-
-    // Prevent negative width/height
-    if (selectedPlatform.width < editorGridSize) selectedPlatform.width = editorGridSize;
-    if (selectedPlatform.height < editorGridSize) selectedPlatform.height = editorGridSize;
 }
 
 function handleMouseUp(e) {
     isResizing = false;
+    isMoving = false;
     resizeHandle = null;
 }
 
@@ -2158,7 +2219,7 @@ function init() {
         levelEditorControls.style.display = 'none';
     });
 
-    const allTypeButtons = [...platformTypeButtons, ...enemyTypeButtons];
+    const allTypeButtons = [...platformTypeButtons, ...enemyTypeButtons, turretButton];
     platformTypeButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             currentEntityType = 'platform';
