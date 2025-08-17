@@ -2205,6 +2205,41 @@ function init() {
     });
 
     canvas.addEventListener('click', clickHandler);
+
+// Add event listener for mouse wheel scrolling in the editor
+canvas.addEventListener('wheel', (e) => {
+    if (gameState === 'levelEditor') {
+        e.preventDefault(); // Prevent page scrolling
+
+        const scrollAmount = 2.5 * editorGridSize; // 2.5 squares
+
+        if (e.deltaY > 0) { // Scrolling down
+            editorCameraY += scrollAmount;
+        } else { // Scrolling up
+            editorCameraY -= scrollAmount;
+        }
+
+        // Clamp editorCameraY to prevent scrolling below the lowest platform
+        let lowestPlatformY = canvas.height - 20; // Default ground platform
+        platforms.forEach(p => {
+            if (p.y + p.height > lowestPlatformY) {
+                lowestPlatformY = p.y + p.height;
+            }
+        });
+
+        // The camera's Y position is negative when scrolling down (viewing higher Y values)
+        // So, a higher (less negative) editorCameraY means scrolling up.
+        // We want to prevent editorCameraY from becoming so negative that the lowest platform is off-screen.
+        // The lowest visible point on the screen is canvas.height + editorCameraY.
+        // This point should not go below the lowest platform's Y.
+        // So, canvas.height + editorCameraY <= lowestPlatformY
+        // editorCameraY <= lowestPlatformY - canvas.height
+        const maxCameraY = lowestPlatformY - canvas.height;
+        if (editorCameraY > maxCameraY) {
+            editorCameraY = maxCameraY;
+        }
+    }
+});
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
