@@ -2178,15 +2178,25 @@ function handleMouseMove(e) {
                 break;
         }
 
+        if (newWidth < editorGridSize) {
+            if (resizeHandle.includes('left')) {
+                newX = initialPlatformX + initialPlatformWidth - editorGridSize;
+            }
+            newWidth = editorGridSize;
+        }
+        if (newHeight < editorGridSize) {
+            if (resizeHandle.includes('top')) {
+                newY = initialPlatformY + initialPlatformHeight - editorGridSize;
+            }
+            newHeight = editorGridSize;
+        }
+
         // Snap to grid
         selectedPlatform.x = Math.round(newX / editorGridSize) * editorGridSize;
         selectedPlatform.y = Math.round(newY / editorGridSize) * editorGridSize;
         selectedPlatform.width = Math.round(newWidth / editorGridSize) * editorGridSize;
         selectedPlatform.height = Math.round(newHeight / editorGridSize) * editorGridSize;
 
-        // Prevent negative width/height
-        if (selectedPlatform.width < editorGridSize) selectedPlatform.width = editorGridSize;
-        if (selectedPlatform.height < editorGridSize) selectedPlatform.height = editorGridSize;
     } else if (isMoving) {
         const newX = mouseX - moveOffsetX;
         const newY = mouseY - moveOffsetY;
