@@ -1516,8 +1516,11 @@ function update() {
     });
 
     let playerInputMovement = 0;
-    if (keys.right) playerInputMovement = playerSpeed;
-    if (keys.left) playerInputMovement = -playerSpeed;
+    if (keys.right && !keys.left) {
+        playerInputMovement = playerSpeed;
+    } else if (keys.left && !keys.right) {
+        playerInputMovement = -playerSpeed;
+    }
 
     player.x += playerInputMovement + platformSpeedX;
 
