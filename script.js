@@ -24,6 +24,7 @@ const standardEnemyButton = document.getElementById('standardEnemy');
 const patrollingEnemyButton = document.getElementById('patrollingEnemy');
 const jumpingEnemyButton = document.getElementById('jumpingEnemy');
 const turretButton = document.getElementById('turret');
+const backgroundMusic = document.getElementById('backgroundMusic');
 
 // Get all platform type buttons
 const platformTypeButtons = document.querySelectorAll('#platformButtons button');
@@ -1069,6 +1070,10 @@ function loadLevel(levelNum, isEditor = false) {
 }
 
 function resetLevelForPlaying(levelNum) {
+    if (!isTimeAttackMode) {
+        backgroundMusic.currentTime = 0;
+        backgroundMusic.play();
+    }
     score = 0;
     cameraY = 0;
     gameover = false;
@@ -1081,6 +1086,7 @@ function resetLevelForPlaying(levelNum) {
 }
 
 function resetLevelForEditor() {
+    backgroundMusic.pause();
     platforms = [];
     enemies = [];
     turrets = [];
@@ -1142,6 +1148,7 @@ function clickHandler(e) {
             if (isTestingLevel) {
                 returnToEditor();
             } else {
+                backgroundMusic.pause();
                 gameState = 'menu';
                 isTimeAttackMode = false;
             }
@@ -1170,12 +1177,15 @@ function clickHandler(e) {
             if (mouseX >= x && mouseX <= x + buttonWidth && mouseY >= y && mouseY <= y + buttonHeight) {
                 if (typeof item === 'object') {
                     if (item.mode === 'timeAttack') {
+                        backgroundMusic.currentTime = 0;
+                        backgroundMusic.play();
                         isTimeAttackMode = true;
                         totalGameTime = 0; // Reset total time for new run
                         gameState = 'playing';
                         levelEditorControls.style.display = 'none';
                         resetLevelForPlaying(1); // Start from Level 1 for Time Attack
                     } else { // Level Editor button
+                        backgroundMusic.pause();
                         gameState = 'levelEditor';
                         levelEditorControls.style.display = 'block';
                         resetLevelForEditor();
@@ -1317,6 +1327,7 @@ function clickHandler(e) {
             if (isTestingLevel) {
                 returnToEditor();
             } else {
+                backgroundMusic.pause();
                 gameState = 'menu';
             }
         }
@@ -1328,6 +1339,7 @@ function clickHandler(e) {
         } else if (isTimeAttackMode) {
             if (level >= Object.keys(levelsData).length) { // All levels completed
                 if (mouseX >= canvas.width/2 - 100 && mouseX <= canvas.width/2 + 100 && mouseY >= canvas.height/2 + 180 && mouseY <= canvas.height/2 + 220) {
+                    backgroundMusic.pause();
                     gameState = 'menu';
                     isTimeAttackMode = false; // Reset mode
                 }
@@ -1346,11 +1358,13 @@ function clickHandler(e) {
                     resetLevelForPlaying(level);
                     gameState = 'playing';
                 } else {
+                    backgroundMusic.pause();
                     gameState = 'menu'; // Or a 'You Win!' screen
                 }
             }
             // 'Back to Menu' button
             if (mouseX >= canvas.width/2 - 100 && mouseX <= canvas.width/2 + 100 && mouseY >= canvas.height/2 + 130 && mouseY <= canvas.height/2 + 170) {
+                backgroundMusic.pause();
                 gameState = 'menu';
             }
         }
@@ -1368,6 +1382,9 @@ function gameLoop() {
         update();
         draw();
     } else if (gameState === 'gameover') {
+        if (!isTimeAttackMode) {
+            backgroundMusic.pause();
+        }
         if (isTimeAttackMode) {
             resetLevelForPlaying(level);
             gameState = 'playing';
@@ -1397,6 +1414,9 @@ function gameLoop() {
     } else if (gameState === 'menu') {
         drawMenu();
     } else if (gameState === 'gameWon') {
+        if (!isTimeAttackMode) {
+            backgroundMusic.pause();
+        }
         if (isTimeAttackMode) {
             if (level < Object.keys(levelsData).length) {
                 // Instantly go to the next level
@@ -1898,6 +1918,8 @@ function loadLevelIntoEditor(levelNum) {
 }
 
 function resetLevelForEditorPlaytest() {
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play();
     gameState = 'playing';
     score = 0;
     cameraY = 0;
@@ -1951,6 +1973,8 @@ function resetLevelForEditorPlaytest() {
 }
 
 function playLevel() {
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play();
     isTestingLevel = true;
     levelEditorControls.style.display = 'none';
 
@@ -1985,6 +2009,7 @@ function playLevel() {
 }
 
 function returnToEditor() {
+    backgroundMusic.pause();
     isTestingLevel = false;
     gameState = 'levelEditor';
     levelEditorControls.style.display = 'block';
