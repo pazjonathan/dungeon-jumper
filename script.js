@@ -1071,6 +1071,11 @@ function loadLevel(levelNum, isEditor = false) {
 
 function resetLevelForPlaying(levelNum) {
     if (!isTimeAttackMode) {
+        if (levelNum === 5 || levelNum === 10) {
+            backgroundMusic.src = 'boss music.mp3';
+        } else {
+            backgroundMusic.src = 'level music.m4a';
+        }
         backgroundMusic.currentTime = 0;
         backgroundMusic.play();
     }
@@ -1087,6 +1092,7 @@ function resetLevelForPlaying(levelNum) {
 
 function resetLevelForEditor() {
     backgroundMusic.pause();
+    backgroundMusic.src = 'level music.m4a';
     platforms = [];
     enemies = [];
     turrets = [];
@@ -1177,6 +1183,7 @@ function clickHandler(e) {
             if (mouseX >= x && mouseX <= x + buttonWidth && mouseY >= y && mouseY <= y + buttonHeight) {
                 if (typeof item === 'object') {
                     if (item.mode === 'timeAttack') {
+                        backgroundMusic.src = 'level music.m4a';
                         backgroundMusic.currentTime = 0;
                         backgroundMusic.play();
                         isTimeAttackMode = true;
