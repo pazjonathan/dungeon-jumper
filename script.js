@@ -1114,15 +1114,19 @@ function drawMenu() {
     const levels = Object.keys(levelsData);
     const editorButton = { name: 'Level Editor', level: 'editor' };
     const timeAttackButton = { name: 'Time Attack', mode: 'timeAttack' };
-    const allItems = [...levels, editorButton, timeAttackButton];
+    const challengesButton = { name: 'Special Challenges', mode: 'challenges' };
+    
+    const topRowItems = [...levels, editorButton, timeAttackButton];
+
     const itemsPerRow = 4;
     const buttonWidth = 150;
     const buttonHeight = 60;
     const gap = 20;
-    const startX = (canvas.width - (itemsPerRow * buttonWidth + (itemsPerRow - 1) * gap)) / 2;
     const startY = 200;
 
-    allItems.forEach((item, index) => {
+    // Draw top rows
+    const startX = (canvas.width - (itemsPerRow * buttonWidth + (itemsPerRow - 1) * gap)) / 2;
+    topRowItems.forEach((item, index) => {
         const row = Math.floor(index / itemsPerRow);
         const col = index % itemsPerRow;
         const x = startX + col * (buttonWidth + gap);
@@ -1138,6 +1142,33 @@ function drawMenu() {
         if (item === '10') text = 'Boss 2';
         ctx.fillText(text, x + buttonWidth / 2, y + buttonHeight / 2 + 8);
     });
+
+    // Draw challenges button on a new row
+    const challengesButtonWidth = 220;
+    const lastRowY = startY + (Math.ceil(topRowItems.length / itemsPerRow)) * (buttonHeight + gap);
+    const challengesButtonX = (canvas.width - challengesButtonWidth) / 2;
+
+    ctx.fillStyle = 'gray';
+    ctx.fillRect(challengesButtonX, lastRowY, challengesButtonWidth, buttonHeight);
+
+    ctx.fillStyle = 'white';
+    ctx.font = '20px sans-serif';
+    ctx.fillText(challengesButton.name, challengesButtonX + challengesButtonWidth / 2, lastRowY + buttonHeight / 2 + 8);
+}
+
+function drawChallengesMenu() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'white';
+    ctx.font = '48px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Special Challenges', canvas.width / 2, 100);
+
+    // Back button
+    ctx.fillStyle = 'gray';
+    ctx.fillRect(canvas.width / 2 - 100, canvas.height - 100, 200, 40);
+    ctx.fillStyle = 'white';
+    ctx.font = '20px sans-serif';
+    ctx.fillText('Back to Menu', canvas.width / 2, canvas.height - 75);
 }
 
 function clickHandler(e) {
@@ -1165,16 +1196,20 @@ function clickHandler(e) {
     if (gameState === 'menu') {
         const levels = Object.keys(levelsData);
         const editorButton = { name: 'Level Editor', level: 'editor' };
-        const timeAttackButton = { name: 'Time Attack', mode: 'timeAttack' }; // Re-add this
-        const allItems = [...levels, editorButton, timeAttackButton]; // Re-add this
+        const timeAttackButton = { name: 'Time Attack', mode: 'timeAttack' };
+        const challengesButton = { name: 'Special Challenges', mode: 'challenges' };
+        
+        const topRowItems = [...levels, editorButton, timeAttackButton];
+
         const itemsPerRow = 4;
         const buttonWidth = 150;
         const buttonHeight = 60;
         const gap = 20;
-        const startX = (canvas.width - (itemsPerRow * buttonWidth + (itemsPerRow - 1) * gap)) / 2;
         const startY = 200;
 
-        allItems.forEach((item, index) => {
+        // Handle clicks on top row items
+        const startX = (canvas.width - (itemsPerRow * buttonWidth + (itemsPerRow - 1) * gap)) / 2;
+        topRowItems.forEach((item, index) => {
             const row = Math.floor(index / itemsPerRow);
             const col = index % itemsPerRow;
             const x = startX + col * (buttonWidth + gap);
@@ -1205,6 +1240,20 @@ function clickHandler(e) {
                 }
             }
         });
+
+        // Handle click on challenges button
+        const challengesButtonWidth = 220;
+        const lastRowY = startY + (Math.ceil(topRowItems.length / itemsPerRow)) * (buttonHeight + gap);
+        const challengesButtonX = (canvas.width - challengesButtonWidth) / 2;
+
+        if (mouseX >= challengesButtonX && mouseX <= challengesButtonX + challengesButtonWidth && mouseY >= lastRowY && mouseY <= lastRowY + buttonHeight) {
+            gameState = 'challengesMenu';
+        }
+    } else if (gameState === 'challengesMenu') {
+        // Back button
+        if (mouseX >= canvas.width / 2 - 100 && mouseX <= canvas.width / 2 + 100 && mouseY >= canvas.height - 100 && mouseY <= canvas.height - 60) {
+            gameState = 'menu';
+        }
     } else if (gameState === 'levelEditor') {
         const editorMouseX = mouseX;
         const editorMouseY = mouseY + editorCameraY;
@@ -1420,6 +1469,8 @@ function gameLoop() {
         }
     } else if (gameState === 'menu') {
         drawMenu();
+    } else if (gameState === 'challengesMenu') {
+        drawChallengesMenu();
     } else if (gameState === 'gameWon') {
         if (!isTimeAttackMode) {
             backgroundMusic.pause();
