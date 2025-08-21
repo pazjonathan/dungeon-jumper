@@ -47,6 +47,7 @@ let turrets = [];
 let score = 0;
 let totalGameTime = 0;
 let isTimeAttackMode = false;
+let isAlwaysJumpingMode = false;
 let editorGridSize = 20;
 let currentPlatformType = 'standard';
 let currentEnemyType = 'standard';
@@ -1163,6 +1164,13 @@ function drawChallengesMenu() {
     ctx.textAlign = 'center';
     ctx.fillText('Special Challenges', canvas.width / 2, 100);
 
+    // Always Jumping Time Attack button
+    ctx.fillStyle = 'gray';
+    ctx.fillRect(canvas.width / 2 - 150, 200, 300, 60);
+    ctx.fillStyle = 'white';
+    ctx.font = '20px sans-serif';
+    ctx.fillText('Time Attack - Always Jumping', canvas.width / 2, 235);
+
     // Back button
     ctx.fillStyle = 'gray';
     ctx.fillRect(canvas.width / 2 - 100, canvas.height - 100, 200, 40);
@@ -1188,6 +1196,7 @@ function clickHandler(e) {
                 backgroundMusic.pause();
                 gameState = 'menu';
                 isTimeAttackMode = false;
+                isAlwaysJumpingMode = false;
             }
             return; // Exit handler
         }
@@ -1250,9 +1259,24 @@ function clickHandler(e) {
             gameState = 'challengesMenu';
         }
     } else if (gameState === 'challengesMenu') {
+        // Always Jumping Time Attack button
+        if (mouseX >= canvas.width / 2 - 150 && mouseX <= canvas.width / 2 + 150 && mouseY >= 200 && mouseY <= 260) {
+            backgroundMusic.src = 'level music.m4a';
+            backgroundMusic.currentTime = 0;
+            backgroundMusic.play();
+            isTimeAttackMode = true;
+            isAlwaysJumpingMode = true;
+            totalGameTime = 0;
+            gameState = 'playing';
+            levelEditorControls.style.display = 'none';
+            resetLevelForPlaying(1);
+        }
+
         // Back button
         if (mouseX >= canvas.width / 2 - 100 && mouseX <= canvas.width / 2 + 100 && mouseY >= canvas.height - 100 && mouseY <= canvas.height - 60) {
             gameState = 'menu';
+            isAlwaysJumpingMode = false;
+            isTimeAttackMode = false;
         }
     } else if (gameState === 'levelEditor') {
         const editorMouseX = mouseX;
@@ -1385,6 +1409,8 @@ function clickHandler(e) {
             } else {
                 backgroundMusic.pause();
                 gameState = 'menu';
+                isTimeAttackMode = false;
+                isAlwaysJumpingMode = false;
             }
         }
     } else if (gameState === 'gameWon') {
@@ -1398,6 +1424,7 @@ function clickHandler(e) {
                     backgroundMusic.pause();
                     gameState = 'menu';
                     isTimeAttackMode = false; // Reset mode
+                    isAlwaysJumpingMode = false;
                 }
             } else { // Not all levels completed, go to next
                 if (mouseX >= canvas.width/2 - 100 && mouseX <= canvas.width/2 + 100 && mouseY >= canvas.height/2 + 80 && mouseY <= canvas.height/2 + 120) {
@@ -1422,6 +1449,8 @@ function clickHandler(e) {
             if (mouseX >= canvas.width/2 - 100 && mouseX <= canvas.width/2 + 100 && mouseY >= canvas.height/2 + 130 && mouseY <= canvas.height/2 + 170) {
                 backgroundMusic.pause();
                 gameState = 'menu';
+                isTimeAttackMode = false;
+                isAlwaysJumpingMode = false;
             }
         }
     }
@@ -1600,7 +1629,7 @@ function update() {
     }
 
     // 3. VERTICAL MOVEMENT
-    if (keys.space && isGrounded) {
+    if ((keys.space || isAlwaysJumpingMode) && isGrounded) {
         velocityY = -jumpHeight;
     }
     velocityY += gravity;
