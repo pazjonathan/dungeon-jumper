@@ -48,6 +48,9 @@ let score = 0;
 let totalGameTime = 0;
 let isTimeAttackMode = false;
 let isAlwaysJumpingMode = false;
+let isLevel7Challenge = false;
+let challengeTimer = 0;
+
 let editorGridSize = 20;
 let currentPlatformType = 'standard';
 let currentEnemyType = 'standard';
@@ -1171,6 +1174,13 @@ function drawChallengesMenu() {
     ctx.font = '20px sans-serif';
     ctx.fillText('Time Attack - Always Jumping', canvas.width / 2, 235);
 
+    // Level 7 Challenge button
+    ctx.fillStyle = 'gray';
+    ctx.fillRect(canvas.width / 2 - 150, 280, 300, 60);
+    ctx.fillStyle = 'white';
+    ctx.font = '20px sans-serif';
+    ctx.fillText('Level 7 in 10 seconds', canvas.width / 2, 315);
+
     // Back button
     ctx.fillStyle = 'gray';
     ctx.fillRect(canvas.width / 2 - 100, canvas.height - 100, 200, 40);
@@ -1197,6 +1207,7 @@ function clickHandler(e) {
                 gameState = 'menu';
                 isTimeAttackMode = false;
                 isAlwaysJumpingMode = false;
+                isLevel7Challenge = false;
             }
             return; // Exit handler
         }
@@ -1272,11 +1283,21 @@ function clickHandler(e) {
             resetLevelForPlaying(1);
         }
 
+        // Level 7 Challenge button
+        if (mouseX >= canvas.width / 2 - 150 && mouseX <= canvas.width / 2 + 150 && mouseY >= 280 && mouseY <= 340) {
+            isLevel7Challenge = true;
+            challengeTimer = 10;
+            gameState = 'playing';
+            levelEditorControls.style.display = 'none';
+            resetLevelForPlaying(7);
+        }
+
         // Back button
         if (mouseX >= canvas.width / 2 - 100 && mouseX <= canvas.width / 2 + 100 && mouseY >= canvas.height - 100 && mouseY <= canvas.height - 60) {
             gameState = 'menu';
             isAlwaysJumpingMode = false;
             isTimeAttackMode = false;
+            isLevel7Challenge = false;
         }
     } else if (gameState === 'levelEditor') {
         const editorMouseX = mouseX;
@@ -1398,6 +1419,9 @@ function clickHandler(e) {
             if (isTestingLevel) {
                 resetLevelForEditorPlaytest();
             } else {
+                if (isLevel7Challenge) {
+                    challengeTimer = 10;
+                }
                 resetLevelForPlaying(level);
                 gameState = 'playing';
             }
@@ -1411,10 +1435,18 @@ function clickHandler(e) {
                 gameState = 'menu';
                 isTimeAttackMode = false;
                 isAlwaysJumpingMode = false;
+                isLevel7Challenge = false;
             }
         }
     } else if (gameState === 'gameWon') {
-        if (isTestingLevel) {
+        if (isLevel7Challenge) {
+            // Back to Menu button
+            if (mouseX >= canvas.width/2 - 100 && mouseX <= canvas.width/2 + 100 && mouseY >= canvas.height/2 + 80 && mouseY <= canvas.height/2 + 120) {
+                backgroundMusic.pause();
+                gameState = 'menu';
+                isLevel7Challenge = false;
+            }
+        } else if (isTestingLevel) {
             if (mouseX >= canvas.width/2 - 100 && mouseX <= canvas.width/2 + 100 && mouseY >= canvas.height/2 + 80 && mouseY <= canvas.height/2 + 120) {
                 returnToEditor();
             }
@@ -1425,6 +1457,7 @@ function clickHandler(e) {
                     gameState = 'menu';
                     isTimeAttackMode = false; // Reset mode
                     isAlwaysJumpingMode = false;
+                    isLevel7Challenge = false;
                 }
             } else { // Not all levels completed, go to next
                 if (mouseX >= canvas.width/2 - 100 && mouseX <= canvas.width/2 + 100 && mouseY >= canvas.height/2 + 80 && mouseY <= canvas.height/2 + 120) {
@@ -1451,6 +1484,7 @@ function clickHandler(e) {
                 gameState = 'menu';
                 isTimeAttackMode = false;
                 isAlwaysJumpingMode = false;
+                isLevel7Challenge = false;
             }
         }
     }
@@ -1501,10 +1535,20 @@ function gameLoop() {
     } else if (gameState === 'challengesMenu') {
         drawChallengesMenu();
     } else if (gameState === 'gameWon') {
-        if (!isTimeAttackMode) {
+        if (isLevel7Challenge) {
             backgroundMusic.pause();
-        }
-        if (isTimeAttackMode) {
+            ctx.fillStyle = 'white';
+            ctx.font = '48px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Challenge Complete!', canvas.width / 2, canvas.height / 2);
+
+            // Back to Menu button
+            ctx.fillStyle = 'gray';
+            ctx.fillRect(canvas.width / 2 - 100, canvas.height / 2 + 80, 200, 40);
+            ctx.fillStyle = 'white';
+            ctx.font = '20px sans-serif';
+            ctx.fillText('Back to Menu', canvas.width / 2, canvas.height / 2 + 105);
+        } else if (isTimeAttackMode) {
             if (level < Object.keys(levelsData).length) {
                 // Instantly go to the next level
                 level++;
@@ -1519,7 +1563,7 @@ function gameLoop() {
                 
                 const minutes = Math.floor(totalGameTime / 60);
                 const seconds = totalGameTime % 60;
-                const formattedTime = `Total Time: ${minutes.toString().padStart(2, '0')}:${seconds.toFixed(2).padStart(5, '0')}`;
+                const formattedTime = `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toFixed(2).padStart(5, '0')}`;
                 ctx.font = '24px sans-serif';
                 ctx.fillText(formattedTime, canvas.width / 2, canvas.height / 2 + 100);
 
@@ -1532,6 +1576,7 @@ function gameLoop() {
             }
         } else {
             // Original game won screen for non-time-attack modes
+            backgroundMusic.pause();
             ctx.fillStyle = 'white';
             ctx.font = '48px sans-serif';
             ctx.textAlign = 'center';
@@ -1573,6 +1618,14 @@ function update() {
 
     if (isTimeAttackMode && gameState === 'playing') {
         totalGameTime += (1 / 60); // Assuming 60 FPS, add 1 second every 60 frames
+    }
+
+    if (isLevel7Challenge && gameState === 'playing') {
+        challengeTimer -= (1 / 60);
+        if (challengeTimer <= 0) {
+            challengeTimer = 0;
+            gameover = true;
+        }
     }
 
     // Update other game elements
@@ -1763,6 +1816,14 @@ function draw() {
         const seconds = totalGameTime % 60;
         const formattedTime = `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toFixed(2).padStart(5, '0')}`;
         ctx.fillText(formattedTime, 10, 80);
+    }
+
+    // Draw Challenge Timer
+    if (isLevel7Challenge) {
+        ctx.fillStyle = 'white';
+        ctx.font = '24px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`Time Left: ${challengeTimer.toFixed(2)}`, 10, 80);
     }
 
     // Back to Menu / Editor button
